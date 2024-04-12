@@ -7,6 +7,7 @@ import DOMPurify from 'dompurify';
 import { useState } from 'react';
 import AceEditor from 'react-ace';
 import Markdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 
 function Description({ descriptionText }: {descriptionText: string}) {
   const [activeTab, setActiveTab] = useState('statement');
@@ -58,7 +59,9 @@ function Description({ descriptionText }: {descriptionText: string}) {
         </div>
 
         <div className="markdownViewer p-5 basis-1/2">
-          <Markdown>{sanitizedMarkdown}</Markdown>
+          <Markdown rehypePlugins={[rehypeRaw]}>
+            {sanitizedMarkdown}
+          </Markdown>
         </div>
       </div>
 
