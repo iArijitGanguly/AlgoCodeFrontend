@@ -22,7 +22,7 @@ function Description({ descriptionText }) {
     setIsDragging(false);
   };
 
-  const onDrag = (e) => {
+  const onDrag = (e: { clientX: number; }) => {
     if (!isDragging) return;
 
     const newLeftWidth = (e.clientX / window.innerWidth) * 100;
@@ -33,7 +33,7 @@ function Description({ descriptionText }) {
 
   return (
     <div
-      className="container flex w-full h-screen"
+      className="flex w-full h-screen"
       onMouseMove={onDrag}
       onMouseUp={stopDragging}
     >
@@ -65,7 +65,7 @@ function Description({ descriptionText }) {
         className="rightPanel h-full overflow-auto"
         style={{ width: `${100 - leftWidth}%` }}
       >
-        <div className="editorContainer">
+        <div className="editorContainer w-full h-full">
           <AceEditor
             mode="javascript"
             theme="monokai"
@@ -77,7 +77,9 @@ function Description({ descriptionText }) {
               enableSnippets: true,
               showLineNumbers: true,
               fontSize: 16,
+              
             }}
+            style={{width: '100%', height: '100%'}}
           />
         </div>
       </div>
