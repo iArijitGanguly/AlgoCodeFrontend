@@ -8,7 +8,7 @@ import { useState } from 'react';
 import AceEditor from 'react-ace';
 import Markdown from 'react-markdown';
 
-function Description({ descriptionText }) {
+function Description({ descriptionText }: {descriptionText: string}) {
   const [activeTab, setActiveTab] = useState('statement');
   const [leftWidth, setLeftWidth] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
@@ -31,6 +31,15 @@ function Description({ descriptionText }) {
     }
   };
 
+  const isActive = (tabName: string) => {
+    if(activeTab == tabName) {
+      return 'tab tab-active';
+    }
+    else {
+      return 'tab';
+    }
+  };
+
   return (
     <div
       className="flex w-full h-screen"
@@ -41,14 +50,11 @@ function Description({ descriptionText }) {
         className="leftPanel h-full overflow-auto"
         style={{ width: `${leftWidth}%` }}
       >
-        <div className="tabs">
-          <button onClick={() => setActiveTab('statement')}>
-            Problem Statement
-          </button>
-          <button onClick={() => setActiveTab('editorial')}>Editorial</button>
-          <button onClick={() => setActiveTab('submission')}>
-            Submissions
-          </button>
+
+        <div role="tablist" className="tabs tabs-boxed w-3/5">
+          <a onClick={() => setActiveTab('statement')} role="tab" className={isActive('statement')}>Problem Statement</a>
+          <a onClick={() => setActiveTab('editorial')} role="tab" className={isActive('editorial')}>Editorial</a>
+          <a onClick={() => setActiveTab('submission')} role="tab" className={isActive('submission')}>Submissions</a>
         </div>
 
         <div className="markdownViewer p-5 basis-1/2">
