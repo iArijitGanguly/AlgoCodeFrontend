@@ -1,6 +1,11 @@
 import 'ace-builds/src-noconflict/ace';
 import 'ace-builds/src-noconflict/theme-monokai';
+import 'ace-builds/src-noconflict/theme-github';
+import 'ace-builds/src-noconflict/theme-github_dark';
 import 'ace-builds/src-noconflict/mode-javascript';
+import 'ace-builds/src-noconflict/mode-java';
+import 'ace-builds/src-noconflict/mode-c_cpp';
+import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/ext-language_tools';
 
 import DOMPurify from 'dompurify';
@@ -74,6 +79,32 @@ function Description({ descriptionText }: {descriptionText: string}) {
         className="rightPanel h-full overflow-auto"
         style={{ width: `${100 - leftWidth}%` }}
       >
+
+        <div className='flex justify-start items-center px-4 py-2 gap-x-2'>
+          <div>
+            <button className="btn btn-success btn-sm">Success</button>
+          </div>
+          <div>
+            <button className="btn btn-warning btn-sm">Warning</button>
+          </div>
+          <div>
+            <select className="select select-info w-full max-w-xs select-sm">
+              <option disabled selected>Language</option>
+              <option value=''>C++</option>
+              <option value=''>Java</option>
+              <option value=''>Javascript</option>
+              <option value=''>Python</option>
+            </select>
+          </div>
+          <div>
+            <select className="select select-info w-full max-w-xs select-sm">
+              <option disabled selected>Theme</option>
+              <option value=''>Monokai</option>
+              <option value=''>Github</option>
+              <option value=''>Github-Dark</option>
+            </select>
+          </div>
+        </div>
         <div className="editorContainer w-full h-full">
           <AceEditor
             mode="javascript"
