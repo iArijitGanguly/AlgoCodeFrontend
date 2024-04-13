@@ -15,9 +15,15 @@ import Markdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 
 import Languages from '../../constants/Languages';
+import Themes from '../../constants/Themes';
 
 type languageSupport = {
   languageName: string;
+  value: string;
+};
+
+type themeSupport = {
+  themeName: string;
   value: string;
 };
 
@@ -26,6 +32,7 @@ function Description({ descriptionText }: { descriptionText: string }) {
   const [leftWidth, setLeftWidth] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const [language, setLanguage] = useState('javascript');
+  const [theme, setTheme] = useState('monokai');
   const sanitizedMarkdown = DOMPurify.sanitize(descriptionText);
 
   const startDragging = () => {
@@ -124,20 +131,25 @@ function Description({ descriptionText }: { descriptionText: string }) {
             </select>
           </div>
           <div>
-            <select className="select select-info w-full max-w-xs select-sm">
-              <option disabled selected>
-                Theme
-              </option>
-              <option value="">Monokai</option>
-              <option value="">Github</option>
-              <option value="">Github-Dark</option>
+            <select
+              className="select select-info w-full max-w-xs select-sm"
+              value={theme}
+              onChange={(e) => setTheme(e.target.value)}
+            >
+              {Themes.map((theme: themeSupport) => {
+                return (
+                  <option key={theme.value} value={theme.value}>
+                    {theme.themeName}
+                  </option>
+                );
+              })}
             </select>
           </div>
         </div>
         <div className="editorContainer w-full">
           <AceEditor
             mode={language}
-            theme="monokai"
+            theme={theme}
             name="codeEditor"
             className="editor"
             setOptions={{
