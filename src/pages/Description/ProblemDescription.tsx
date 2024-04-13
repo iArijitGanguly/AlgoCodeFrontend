@@ -1,20 +1,20 @@
-import "ace-builds/src-noconflict/ace";
-import "ace-builds/src-noconflict/theme-monokai";
-import "ace-builds/src-noconflict/theme-github";
-import "ace-builds/src-noconflict/theme-github_dark";
-import "ace-builds/src-noconflict/mode-javascript";
-import "ace-builds/src-noconflict/mode-java";
-import "ace-builds/src-noconflict/mode-c_cpp";
-import "ace-builds/src-noconflict/mode-python";
-import "ace-builds/src-noconflict/ext-language_tools";
+import 'ace-builds/src-noconflict/ace';
+import 'ace-builds/src-noconflict/theme-monokai';
+import 'ace-builds/src-noconflict/theme-github';
+import 'ace-builds/src-noconflict/theme-github_dark';
+import 'ace-builds/src-noconflict/mode-javascript';
+import 'ace-builds/src-noconflict/mode-java';
+import 'ace-builds/src-noconflict/mode-c_cpp';
+import 'ace-builds/src-noconflict/mode-python';
+import 'ace-builds/src-noconflict/ext-language_tools';
 
-import DOMPurify from "dompurify";
-import { useState } from "react";
-import AceEditor from "react-ace";
-import Markdown from "react-markdown";
-import rehypeRaw from "rehype-raw";
+import DOMPurify from 'dompurify';
+import { useState } from 'react';
+import AceEditor from 'react-ace';
+import Markdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 
-import Languages from "../../constants/Languages";
+import Languages from '../../constants/Languages';
 
 type languageSupport = {
   languageName: string;
@@ -22,10 +22,10 @@ type languageSupport = {
 };
 
 function Description({ descriptionText }: { descriptionText: string }) {
-  const [activeTab, setActiveTab] = useState("statement");
+  const [activeTab, setActiveTab] = useState('statement');
   const [leftWidth, setLeftWidth] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
-  const [language, setLanguage] = useState("javascript");
+  const [language, setLanguage] = useState('javascript');
   const sanitizedMarkdown = DOMPurify.sanitize(descriptionText);
 
   const startDragging = () => {
@@ -47,9 +47,9 @@ function Description({ descriptionText }: { descriptionText: string }) {
 
   const isActive = (tabName: string) => {
     if (activeTab == tabName) {
-      return "tab tab-active";
+      return 'tab tab-active';
     } else {
-      return "tab";
+      return 'tab';
     }
   };
 
@@ -65,23 +65,23 @@ function Description({ descriptionText }: { descriptionText: string }) {
       >
         <div role="tablist" className="tabs tabs-boxed w-3/5">
           <a
-            onClick={() => setActiveTab("statement")}
+            onClick={() => setActiveTab('statement')}
             role="tab"
-            className={isActive("statement")}
+            className={isActive('statement')}
           >
             Problem Statement
           </a>
           <a
-            onClick={() => setActiveTab("editorial")}
+            onClick={() => setActiveTab('editorial')}
             role="tab"
-            className={isActive("editorial")}
+            className={isActive('editorial')}
           >
             Editorial
           </a>
           <a
-            onClick={() => setActiveTab("submission")}
+            onClick={() => setActiveTab('submission')}
             role="tab"
-            className={isActive("submission")}
+            className={isActive('submission')}
           >
             Submissions
           </a>
@@ -134,7 +134,7 @@ function Description({ descriptionText }: { descriptionText: string }) {
             </select>
           </div>
         </div>
-        <div className="editorContainer w-full h-full">
+        <div className="editorContainer w-full">
           <AceEditor
             mode={language}
             theme="monokai"
@@ -147,7 +147,7 @@ function Description({ descriptionText }: { descriptionText: string }) {
               showLineNumbers: true,
               fontSize: 16,
             }}
-            style={{ width: "100%", height: "100%" }}
+            style={{ width: '100%' }}
           />
         </div>
       </div>
