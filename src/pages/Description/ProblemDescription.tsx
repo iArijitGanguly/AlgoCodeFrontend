@@ -29,14 +29,16 @@ type themeSupport = {
 
 function Description({ descriptionText }: { descriptionText: string }) {
   const [activeTab, setActiveTab] = useState('statement');
+  const [testCaseTab, setTestCaseTab] = useState('input');
   const [leftWidth, setLeftWidth] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const [language, setLanguage] = useState('javascript');
   const [theme, setTheme] = useState('monokai');
   const sanitizedMarkdown = DOMPurify.sanitize(descriptionText);
 
-  const startDragging = () => {
+  const startDragging = (e: { preventDefault: () => void }) => {
     setIsDragging(true);
+    e.preventDefault();
   };
 
   const stopDragging = () => {
@@ -56,6 +58,15 @@ function Description({ descriptionText }: { descriptionText: string }) {
     if (activeTab == tabName) {
       return 'tab tab-active';
     } else {
+      return 'tab';
+    }
+  };
+
+  const isTestCaseActiveTab = (tabName: string) => {
+    if(testCaseTab == tabName) {
+      return 'tab tab-active';
+    }
+    else {
       return 'tab';
     }
   };
@@ -146,7 +157,7 @@ function Description({ descriptionText }: { descriptionText: string }) {
             </select>
           </div>
         </div>
-        <div className="editorContainer w-full">
+        <div className="editorContainer w-full h-[90%]">
           <AceEditor
             mode={language}
             theme={theme}
@@ -159,8 +170,34 @@ function Description({ descriptionText }: { descriptionText: string }) {
               showLineNumbers: true,
               fontSize: 16,
             }}
-            style={{ width: '100%' }}
+            style={{ width: '100%', height: '68%' }}
           />
+
+          <div className="collapse bg-base-200 rounded-none">
+            <input type="checkbox" className="peer" /> 
+            <div className="collapse-title bg-primary text-primary-content peer-checked:bg-secondary peer-checked:text-secondary-content">
+              Console
+            </div>
+            <div className="collapse-content bg-primary text-primary-content peer-checked:bg-secondary peer-checked:text-secondary-content"> 
+              <div role="tablist" className="tabs tabs-boxed w-3/5 mb-4">
+                <a
+                  role="tab"
+                  className={isTestCaseActiveTab('input')}
+                  onClick={() => setTestCaseTab('input')}
+                >
+                  Input
+                </a>
+                <a
+                  role="tab"
+                  className={isTestCaseActiveTab('output')}
+                  onClick={() => setTestCaseTab('output')}
+                >
+                  Output
+                </a>
+              </div>
+              {(testCaseTab == 'input') ? <textarea rows={3} cols={70} className='bg-neutral text-white rounded-md resize-none' /> : <div className='w-12 h-8'></div>}
+            </div>
+          </div>
         </div>
       </div>
     </div>

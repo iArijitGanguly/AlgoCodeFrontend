@@ -50,8 +50,8 @@ Explanation: Since the knight is already on the board, no moves are needed.
 ### Constraints
 
 - \`n == 1\` or \`n == 2\`
-- \`0 <= k <= 25\`
-- \`0 <= row, column <= n - 1\`
+- \`0\` &lt= \`k\` &lt= \`25\`
+- \`0\` &lt= \`row,column\` &lt= \`n - 1\`
 
 ### Note
 
