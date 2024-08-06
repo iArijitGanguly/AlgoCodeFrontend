@@ -1,206 +1,319 @@
-import 'ace-builds/src-noconflict/ace';
-import 'ace-builds/src-noconflict/theme-monokai';
-import 'ace-builds/src-noconflict/theme-github';
-import 'ace-builds/src-noconflict/theme-github_dark';
-import 'ace-builds/src-noconflict/mode-javascript';
-import 'ace-builds/src-noconflict/mode-java';
-import 'ace-builds/src-noconflict/mode-c_cpp';
-import 'ace-builds/src-noconflict/mode-python';
-import 'ace-builds/src-noconflict/ext-language_tools';
+import '../../imports/AceBuildImports';
 
+// import axios from 'axios';
 import DOMPurify from 'dompurify';
-import { useState } from 'react';
+import { ChangeEvent, DragEvent, useContext, useEffect } from 'react';
 import AceEditor from 'react-ace';
-import Markdown from 'react-markdown';
+import ReactMarkdown from 'react-markdown';
+import { useDispatch } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import rehypeRaw from 'rehype-raw';
+import remarkGfm from 'remark-gfm';
 
+import EvaluationResult from '../../components/EvaluationResult';
+import LoaderState from '../../components/Loader';
 import Languages from '../../constants/Languages';
+import { useTypedSelector } from '../../constants/ReduxStates';
 import Themes from '../../constants/Themes';
+import { SocketContext } from '../../contexts/SocketContext';
+import useProblems from '../../hooks/useProblem';
+import HomeLayout from '../../layouts/HomeLayout';
+import {
+  handleActiveTab,
+  handleCode,
+  handleIsDragging,
+  handleLanguage,
+  handleLeftWidth,
+  handleSubmissionButton,
+  handleTestCaseActiveTab,
+  handleTheme,
+} from '../../redux/slices/problemSlice';
+import { createSubmission, handleEvaluationResult, handleSubmissionId, handleSubmissionStatus } from '../../redux/slices/submissionSlice';
+import { AppDispatch } from '../../redux/store';
 
 type languageSupport = {
   languageName: string;
   value: string;
 };
 
-type themeSupport = {
+type themeStyle = {
   themeName: string;
   value: string;
 };
 
-function Description({ descriptionText }: { descriptionText: string }) {
-  const [activeTab, setActiveTab] = useState('statement');
-  const [testCaseTab, setTestCaseTab] = useState('input');
-  const [leftWidth, setLeftWidth] = useState(50);
-  const [isDragging, setIsDragging] = useState(false);
-  const [language, setLanguage] = useState('javascript');
-  const [theme, setTheme] = useState('monokai');
-  const sanitizedMarkdown = DOMPurify.sanitize(descriptionText);
+function Description() {
+  const userId = useTypedSelector((state) => state.auth.userId);
+  const submissionStatus = useTypedSelector(
+    (state) => state.submission.submissionStatus
+  );
+  const submissionId = useTypedSelector((state) => state.submission.submissionId);
+  const isClicked = useTypedSelector((state) => state.problem.isClicked);
+  const dispatch = useDispatch<AppDispatch>();
 
-  const startDragging = (e: { preventDefault: () => void }) => {
-    setIsDragging(true);
-    e.preventDefault();
+  const { evaluationResult } = useContext(SocketContext);
+
+  const { problemId } = useParams();
+
+  const [problemState] = useProblems(problemId);
+
+  const { problemCode, problemLanguage, activeTab } = problemState;
+
+  const descriptionText = problemState.problemDescription?.description;
+
+  const sanitizedMarkdown = DOMPurify.sanitize(descriptionText as string);
+
+  useEffect(() => {
+    if (
+      problemState.problemDescription?.codeStubs &&
+      problemState.problemLanguage
+    ) {
+      problemState.problemDescription.codeStubs.forEach((stub) => {
+        if (
+          stub.language.toLowerCase() ==
+          problemState.problemLanguage.toLowerCase()
+        ) {
+          dispatch(handleCode(stub.userSnippet));
+        }
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [problemState.problemLanguage, problemState.problemDescription]);
+
+  const handleSubmission = async () => {
+    dispatch(handleSubmissionButton(true));
+    if(submissionId && submissionStatus) {
+      dispatch(handleSubmissionId(''));
+      dispatch(handleSubmissionStatus(''));
+    }
+    if(activeTab != 'submissions') {
+      dispatch(handleActiveTab('submissions'));
+    }
+    if(evaluationResult) {
+      dispatch(handleEvaluationResult(null));
+    }
+    await dispatch(
+      createSubmission({
+        userId,
+        problemId,
+        code: problemCode,
+        language: problemLanguage,
+      })
+    );
   };
 
-  const stopDragging = () => {
-    setIsDragging(false);
-  };
-
-  const onDrag = (e: { clientX: number }) => {
-    if (!isDragging) return;
-
-    const newLeftWidth = (e.clientX / window.innerWidth) * 100;
-    if (newLeftWidth > 10 && newLeftWidth < 90) {
-      setLeftWidth(newLeftWidth);
+  const handleSubmitButton = () => {
+    if(isClicked) {
+      return 'bg-gray-800 pointer-events-none text-gray-500 rounded-md font-semibold btn-success btn-sm';
+    }
+    else {
+      return 'btn btn-success btn-sm';
     }
   };
 
-  const isActive = (tabName: string) => {
-    if (activeTab == tabName) {
+  const startDragging = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    dispatch(handleIsDragging(true));
+  };
+
+  const stopDragging = () => {
+    if (problemState.isDragging) {
+      dispatch(handleIsDragging(false));
+    }
+  };
+
+  const onDrag = (e: DragEvent<HTMLDivElement>) => {
+    if (!problemState.isDragging) return;
+
+    const newLeftWidth = (e.clientX / window.innerWidth) * 100;
+    if (newLeftWidth > 10 && newLeftWidth < 90) {
+      dispatch(handleLeftWidth(newLeftWidth));
+    }
+  };
+
+  const isActiveTab = (tabName: string) => {
+    if (problemState.activeTab == tabName) {
       return 'tab tab-active';
     } else {
       return 'tab';
     }
   };
 
-  const isTestCaseActiveTab = (tabName: string) => {
-    if(testCaseTab == tabName) {
+  const isInputTabActive = (tabName: string) => {
+    if (problemState.testCaseTab == tabName) {
       return 'tab tab-active';
-    }
-    else {
+    } else {
       return 'tab';
     }
   };
 
   return (
-    <div
-      className="flex w-full h-screen"
-      onMouseMove={onDrag}
-      onMouseUp={stopDragging}
-    >
+    <HomeLayout>
       <div
-        className="leftPanel h-full overflow-auto"
-        style={{ width: `${leftWidth}%` }}
+        className="flex w-screen h-[calc(100vh-57px)]"
+        onMouseMove={onDrag}
+        onMouseUp={stopDragging}
       >
-        <div role="tablist" className="tabs tabs-boxed w-3/5">
-          <a
-            onClick={() => setActiveTab('statement')}
-            role="tab"
-            className={isActive('statement')}
-          >
-            Problem Statement
-          </a>
-          <a
-            onClick={() => setActiveTab('editorial')}
-            role="tab"
-            className={isActive('editorial')}
-          >
-            Editorial
-          </a>
-          <a
-            onClick={() => setActiveTab('submission')}
-            role="tab"
-            className={isActive('submission')}
-          >
-            Submissions
-          </a>
-        </div>
-
-        <div className="markdownViewer p-5 basis-1/2">
-          <Markdown rehypePlugins={[rehypeRaw]}>{sanitizedMarkdown}</Markdown>
-        </div>
-      </div>
-
-      <div
-        className="divider cursor-col-resize w-2 h-full bg-slate-200"
-        onMouseDown={startDragging}
-      ></div>
-
-      <div
-        className="rightPanel h-full overflow-auto"
-        style={{ width: `${100 - leftWidth}%` }}
-      >
-        <div className="flex justify-start items-center px-4 py-2 gap-x-2">
-          <div>
-            <button className="btn btn-success btn-sm">Submit</button>
-          </div>
-          <div>
-            <button className="btn btn-warning btn-sm">Run</button>
-          </div>
-          <div>
-            <select
-              className="select select-info w-full max-w-xs select-sm"
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
+        <div
+          className="leftPanel h-full overflow-auto"
+          style={{ width: `${problemState.leftWidth}%` }}
+        >
+          <div role="tablist" className="tabs tabs-boxed w-3/5">
+            <a
+              onClick={() => dispatch(handleActiveTab('statement'))}
+              role="tab"
+              className={isActiveTab('statement')}
             >
-              {Languages.map((language: languageSupport) => {
-                return (
+              Problem Statement
+            </a>
+            <a
+              onClick={() => dispatch(handleActiveTab('editorial'))}
+              role="tab"
+              className={isActiveTab('editorial')}
+            >
+              Editorial
+            </a>
+            <a
+              onClick={() => dispatch(handleActiveTab('submissions'))}
+              role="tab"
+              className={isActiveTab('submissions')}
+            >
+              Submissions
+            </a>
+          </div>
+
+          <div className="markdownViewer p-[20px] basis-1/2">
+            {activeTab == 'statement' && (
+              <ReactMarkdown
+                children={sanitizedMarkdown}
+                rehypePlugins={[rehypeRaw]}
+                remarkPlugins={[remarkGfm]}
+                className="prose"
+              />
+            )}
+
+            {activeTab == 'submissions' && submissionStatus.toLowerCase() == 'pending' && (
+              <LoaderState status={submissionStatus} />
+            )}
+
+            {activeTab == 'submissions' && evaluationResult && (
+              <EvaluationResult response={evaluationResult.response} status={submissionStatus} />
+            )}
+          </div>
+        </div>
+
+        <div
+          className="divider cursor-col-resize w-[5px] bg-slate-200 h-full"
+          onMouseDown={startDragging}
+        ></div>
+
+        <div
+          className="rightPanel h-full overflow-auto flex flex-col"
+          style={{ width: `${100 - problemState.leftWidth}%` }}
+        >
+          <div className="flex gap-x-1.5 justify-start items-center px-4 py-2 basis-[5%]">
+            <div>
+              <button
+                className={handleSubmitButton()}
+                onClick={handleSubmission}
+              >
+                Submit
+              </button>
+            </div>
+            
+            <div>
+              <select
+                className="select select-info w-full select-sm max-w-xs"
+                value={problemState.problemLanguage}
+                onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                  dispatch(handleLanguage(e.target.value))
+                }
+              >
+                {Languages.map((language: languageSupport) => (
                   <option key={language.value} value={language.value}>
-                    {language.languageName}
+                    {' '}
+                    {language.languageName}{' '}
                   </option>
-                );
-              })}
-            </select>
-          </div>
-          <div>
-            <select
-              className="select select-info w-full max-w-xs select-sm"
-              value={theme}
-              onChange={(e) => setTheme(e.target.value)}
-            >
-              {Themes.map((theme: themeSupport) => {
-                return (
-                  <option key={theme.value} value={theme.value}>
-                    {theme.themeName}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-        </div>
-        <div className="editorContainer w-full h-[90%]">
-          <AceEditor
-            mode={language}
-            theme={theme}
-            name="codeEditor"
-            className="editor"
-            setOptions={{
-              enableBasicAutocompletion: true,
-              enableLiveAutocompletion: true,
-              enableSnippets: true,
-              showLineNumbers: true,
-              fontSize: 16,
-            }}
-            style={{ width: '100%', height: '68%' }}
-          />
-
-          <div className="collapse bg-base-200 rounded-none">
-            <input type="checkbox" className="peer" /> 
-            <div className="collapse-title bg-primary text-primary-content peer-checked:bg-secondary peer-checked:text-secondary-content">
-              Console
+                ))}
+              </select>
             </div>
-            <div className="collapse-content bg-primary text-primary-content peer-checked:bg-secondary peer-checked:text-secondary-content"> 
-              <div role="tablist" className="tabs tabs-boxed w-3/5 mb-4">
-                <a
-                  role="tab"
-                  className={isTestCaseActiveTab('input')}
-                  onClick={() => setTestCaseTab('input')}
-                >
-                  Input
-                </a>
-                <a
-                  role="tab"
-                  className={isTestCaseActiveTab('output')}
-                  onClick={() => setTestCaseTab('output')}
-                >
-                  Output
-                </a>
+            <div>
+              <select
+                className="select select-info w-full select-sm max-w-xs"
+                value={problemState.problemTheme}
+                onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                  dispatch(handleTheme(e.target.value))
+                }
+              >
+                {Themes.map((theme: themeStyle) => (
+                  <option key={theme.value} value={theme.value}>
+                    {' '}
+                    {theme.themeName}{' '}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex flex-col editor-console grow-[1]">
+            <div className="editorContainer grow-[1]">
+              <AceEditor
+                mode={problemState.problemLanguage}
+                theme={problemState.problemTheme}
+                value={problemState.problemCode}
+                onChange={(e: string) => dispatch(handleCode(e))}
+                name="codeEditor"
+                className="editor"
+                style={{ width: '100%' }}
+                setOptions={{
+                  enableBasicAutocompletion: true,
+                  enableLiveAutocompletion: true,
+                  showLineNumbers: true,
+                  fontSize: 16,
+                }}
+                height="100%"
+              />
+            </div>
+
+            {/* Collapsable test case part */}
+
+            <div className="collapse bg-base-200 rounded-none">
+              <input type="checkbox" className="peer" />
+              <div className="collapse-title bg-primary text-primary-content peer-checked:bg-secondary peer-checked:text-secondary-content">
+                Console
               </div>
-              {(testCaseTab == 'input') ? <textarea rows={3} cols={70} className='bg-neutral text-white rounded-md resize-none' /> : <div className='w-12 h-8'></div>}
+              <div className="collapse-content bg-primary text-primary-content peer-checked:bg-secondary peer-checked:text-secondary-content">
+                <div role="tablist" className="tabs tabs-boxed w-3/5 mb-4">
+                  <a
+                    onClick={() => dispatch(handleTestCaseActiveTab('input'))}
+                    role="tab"
+                    className={isInputTabActive('input')}
+                  >
+                    Input
+                  </a>
+                  <a
+                    onClick={() => dispatch(handleTestCaseActiveTab('output'))}
+                    role="tab"
+                    className={isInputTabActive('output')}
+                  >
+                    Output
+                  </a>
+                </div>
+
+                {problemState.testCaseTab === 'input' ? (
+                  <textarea
+                    rows={4}
+                    cols={70}
+                    className="bg-neutral text-white rounded-md resize-none"
+                  />
+                ) : (
+                  <div className="w-12 h-8"></div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </HomeLayout>
   );
 }
 

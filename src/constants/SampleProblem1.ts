@@ -1,8 +1,7 @@
 export default {
   problemStatement: `
 
-## LeetCode Problem 688: Knight Probability in Chessboard 
-
+## LeetCode Problem 688: Knight Probability in Chessboard
 <br />
 
 ### Problem Description
@@ -50,8 +49,8 @@ Explanation: Since the knight is already on the board, no moves are needed.
 ### Constraints
 
 - \`n == 1\` or \`n == 2\`
-- \`0\` &lt= \`k\` &lt= \`25\`
-- \`0\` &lt= \`row,column\` &lt= \`n - 1\`
+- <code>0 &lt;= k &lt;= 25</code>
+- <code>0 &lt;= row, column &lt;= n - 1</code>
 
 ### Note
 
@@ -60,6 +59,6 @@ The final answer must be within \`10^-5\` of the correct answer.
 ### Follow-up
 
 Can you use a solution with O(K) memory?
-    
-    `
+  
+  `
 };

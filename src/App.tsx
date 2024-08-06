@@ -1,15 +1,19 @@
-import Navbar from './components/Navbar';
-import Sidebar from './components/Sidebar';
-import SampleProblem1 from './constants/SampleProblem1';
-import ProblemDescription from './pages/Description/ProblemDescription';
+// import Navbar from './components/Navbar';
+// import Sidebar from './components/Sidebar';
+// import SampleProblem1 from './constants/SampleProblem1';
+// import ProblemDescription from './pages/Description/ProblemDescription';
+import MainRouts from './routes/MainRoutes';
 
 function App() {
-  const markdownText = SampleProblem1.problemStatement;
+  // const markdownText = SampleProblem1.problemStatement;
   return (
     <>
-      <Navbar />
-      <Sidebar />
-      <ProblemDescription descriptionText={markdownText} />
+      <div className='h-[100vh] overflow-hidden'>
+        {/* <Navbar />
+        <Sidebar />
+        <ProblemDescription descriptionText={markdownText} /> */}
+        <MainRouts />
+      </div>
     </>
   );
 }

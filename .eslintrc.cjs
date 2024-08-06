@@ -16,7 +16,7 @@ module.exports = {
     ],
     'semi': [1, 'always'],
     'quotes': ['warn', 'single'],
-    'indent': ['warn', 2],
+    // 'indent': ['warn', 2],
     'simple-import-sort/imports': 'warn'
   },
 }

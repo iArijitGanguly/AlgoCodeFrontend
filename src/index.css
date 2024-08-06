@@ -20,3 +20,7 @@
         @apply text-xl
     }
 }
+
+.custom-row-gap .p-datatable-tbody > tr {
+    margin-top: 3rem; /* Adjust the value to increase/decrease the gap */
+}

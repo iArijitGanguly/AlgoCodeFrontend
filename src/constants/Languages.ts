@@ -8,10 +8,6 @@ export default [
     value: 'java'
   },
   {
-    languageName: 'Javascript',
-    value: 'javascript'
-  },
-  {
     languageName: 'Python',
     value: 'python'
   }

@@ -1,4 +1,12 @@
+import { TypedUseSelectorHook,useSelector } from 'react-redux';
+
+import { RootState } from '../redux/store';
+
+const useTypedSelectorHook: TypedUseSelectorHook<RootState> = useSelector;
+
 function Sidebar() {
+
+  const authState = useTypedSelectorHook((state) => state.auth);
   return (
     <div className="drawer">
       <input id="my-drawer" type="checkbox" className="drawer-toggle" />
@@ -6,8 +14,12 @@ function Sidebar() {
         <label htmlFor="my-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
         <ul className="menu p-4 w-80 min-h-full bg-base-200 text-base-content">
           {/* Sidebar content here */}
-          <li><a>Sidebar Item 1</a></li>
-          <li><a>Sidebar Item 2</a></li>
+          {!authState.isLoggedIn && (
+            <div>
+              <li><a>Sign In</a></li>
+              <li><a>Sign Out</a></li>
+            </div>
+          )}
       
         </ul>
       </div>
